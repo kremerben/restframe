@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 
 class SnippetSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
+    # highlight =
 
     class Meta:
         model = Snippet
@@ -18,7 +19,6 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'snippets')
-
 
 
 
