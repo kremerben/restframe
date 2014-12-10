@@ -21,7 +21,7 @@ from rest_framework import renderers
 def api_root(request, format=None):
     return Response({
         'users': reverse('user-list', request=request, format=format),
-        'snippets': reverse('snippet-list', request=request, format=format),
+        'snippets': reverse('snippet-list', request=request, format=format)
     })
 
 
@@ -53,7 +53,7 @@ class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                          IsOwnerOrReadOnly, )
+                          IsOwnerOrReadOnly,)
 
 
 class UserList(generics.ListAPIView):

@@ -22,7 +22,7 @@ class Snippet(models.Model):
     style = models.CharField(choices=STYLE_CHOICES,
                              default='friendly',
                              max_length=100)
-    owner = models.ForeignKey(User, related_name='snippets')
+    owner = models.ForeignKey('auth.User', related_name='snippets')
     highlighted = models.TextField()
 
     class Meta:
