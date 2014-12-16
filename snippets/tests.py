@@ -9,6 +9,15 @@ from rest_framework.test import APITestCase
 from snippets.models import Snippet, User
 from rest_framework import serializers
 
+
+
+class Setup(TestCase):
+    def setUp(self):
+        User.objects.create_user(username='test--user')
+        User.objects.create_user(username='second--user')
+        Snippet.objects.create(title='Snippet Title', code='print hello world', owner_id='1')
+        Snippet.objects.create(title='Second Snippet Title', code='print world hellow', owner_id='2')
+
 class BasicMathTestCase(TestCase):
     def test_math(self):
         a = 1
@@ -44,7 +53,7 @@ class AccountTests(APITestCase):
     def test_clean_username_exception(self):
         # Create a user to test it is already taken
         User.objects.create_user(username='test--user')
-        
+
         url = reverse('user-list')
         data = {'username': 'test--user'}
         response = self.client.post(url, data, format='json')
@@ -67,9 +76,10 @@ class APIResponseTests(APITestCase):
     def test_users_response(self):
         response = self.client.get('/users/1/')
         data = {'username': 'test--user'}
-        def extractDictAFromB(A,B):
-            return dict([(k,B[k]) for k in A.keys() if k in B.keys()])
-        self.assertEqual(data, extractDictAFromB(data,response.data))
+
+        def extractDictAFromB(A, B):
+            return dict([(k, B[k]) for k in A.keys() if k in B.keys()])
+        self.assertEqual(data, extractDictAFromB(data, response.data))
         # self.assertDictContainsSubset({'username': 'test--user'}, response.data)
 
 
@@ -93,3 +103,8 @@ class ModelTestCase(TestCase):
         html_line_82 = '<h2>{}</h2>'.format(self.snippet.title)
         self.assertIn(html_line_82, self.snippet.highlighted)
 
+    def test_snippet_detail(self):
+        testsnippet = Snippet.objects.all()[0]
+        url = '/snippets/{}/'.format(str(testsnippet.id))
+        response = self.client.get(url)
+        self.assertContains(response, testsnippet.title)
