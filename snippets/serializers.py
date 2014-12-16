@@ -6,15 +6,20 @@ from django.contrib.auth.models import User
 
 
 class SnippetSerializer(serializers.HyperlinkedModelSerializer):
-    owner = serializers.Field(source='owner.username')
+    owner = serializers.ReadOnlyField(source='owner.username')
     highlight = serializers.HyperlinkedIdentityField(view_name='snippet-highlight', format='html')
 
-    def to_representation(self, value):
+    # def to_representation(self, value):
+    #     pass
         # print value
         # print value.title
         # print value.code
-        return value.title
+        # return value.title
         # return Snippet.objects.get(pk=value.pk)
+    def to_representation(self, instance):
+        ret = super(SnippetSerializer, self).to_representation(instance)
+        # ret['owner.username'] = ret['owner.username'].lower()
+        return ret
 
     class Meta:
         model = Snippet

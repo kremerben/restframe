@@ -17,7 +17,7 @@ from rest_framework import generics
 from rest_framework import permissions
 from rest_framework import renderers
 
-@api_view(('GET',))
+@api_view(('GET','POST'))
 def api_root(request, format=None):
     return Response({
         'users': reverse('user-list', request=request, format=format),
@@ -56,12 +56,12 @@ class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
                           IsOwnerOrReadOnly,)
 
 
-class UserList(generics.ListAPIView):
+class UserList(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
 
-class UserDetail(generics.RetrieveAPIView):
+class UserDetail(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
