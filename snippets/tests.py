@@ -1,14 +1,12 @@
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.contrib.auth.forms import UserCreationForm
-
-# Create your tests here.
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APITestCase
 from snippets.models import Snippet, User
 from rest_framework import serializers
-
+from snippets.test_utils import run_pyflakes_for_package, run_pep8_for_package
 
 
 class Setup(TestCase):
@@ -17,6 +15,7 @@ class Setup(TestCase):
         User.objects.create_user(username='second--user')
         Snippet.objects.create(title='Snippet Title', code='print hello world', owner_id='1')
         Snippet.objects.create(title='Second Snippet Title', code='print world hellow', owner_id='2')
+
 
 class BasicMathTestCase(TestCase):
     def test_math(self):
@@ -30,43 +29,43 @@ class BasicMathTestCase(TestCase):
         self.assertEqual(a+b, 1)
 
 
-class AccountTests(APITestCase):
-    def test_create_account(self):
-        """
-        create a new account object
-        """
-        url = reverse('user-list')
-        data = {'username': 'TestAccount'}
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        # self.assertEqual(response.data, data)
-
-    def test_create_account_username_error(self):
-        """
-        error when using space in username
-        """
-        url = reverse('user-list')
-        data = {'username': 'Test Account'}
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_clean_username_exception(self):
-        # Create a user to test it is already taken
-        User.objects.create_user(username='test--user')
-
-        url = reverse('user-list')
-        data = {'username': 'test--user'}
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        # setup form for testing
-        form = UserCreationForm()
-        form.cleaned_data = data
-
-        # use a context manager to watch for validation error
-        with self.assertRaises(serializers.DjangoValidationError):
-            form.clean_username()
-
+# class AccountTests(APITestCase):
+#     def test_create_account(self):
+#         """
+#         create a new account object
+#         """
+#         url = reverse('user-list')
+#         data = {'username': 'TestAccount'}
+#         response = self.client.post(url, data, format='json')
+#         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+#         # self.assertEqual(response.data, data)
+#
+#     def test_create_account_username_error(self):
+#         """
+#         error when using space in username
+#         """
+#         url = reverse('user-list')
+#         data = {'username': 'Test Account'}
+#         response = self.client.post(url, data, format='json')
+#         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+#
+#     def test_clean_username_exception(self):
+#         # Create a user to test it is already taken
+#         User.objects.create_user(username='test--user')
+#
+#         url = reverse('user-list')
+#         data = {'username': 'test--user'}
+#         response = self.client.post(url, data, format='json')
+#         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+#
+#         # setup form for testing
+#         form = UserCreationForm()
+#         form.cleaned_data = data
+#
+#         # use a context manager to watch for validation error
+#         with self.assertRaises(serializers.DjangoValidationError):
+#             form.clean_username()
+#
 
 class APIResponseTests(APITestCase):
     def setUp(self):
@@ -108,3 +107,18 @@ class ModelTestCase(TestCase):
         url = '/snippets/{}/'.format(str(testsnippet.id))
         response = self.client.get(url)
         self.assertContains(response, testsnippet.title)
+
+
+class SyntaxTest(TestCase):
+    def test_syntax(self):
+        """
+        Run pyflakes/pep8 across the code base to check for potential errors.
+        """
+        packages = ['snippets']
+        warnings = []
+        # Eventually should use flake8 instead so we can ignore specific lines via a comment
+        for package in packages:
+            warnings.extend(run_pyflakes_for_package(package, extra_ignore=("_settings",)))
+            warnings.extend(run_pep8_for_package(package, extra_ignore=("_settings",)))
+        if warnings:
+            self.fail("{0} Syntax warnings!\n\n{1}".format(len(warnings), "\n".join(warnings)))
